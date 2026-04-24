@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopfloor Data Capture &amp; Monitoring Prototype</title>
+  <style>
+    :root {
+      --border-color: #999;
+      --ok-text: #166534;
+      --ok-bg: #dcfce7;
+      --warn-text: #92400e;
+      --warn-bg: #fef3c7;
+      --critical-text: #991b1b;
+      --critical-bg: #fee2e2;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      line-height: 1.4;
+    }
+
+    main {
+      max-width: 980px;
+    }
+
+    form {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fafafa;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .form-grid,
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      align-items: end;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field-error {
+      margin: 0;
+      min-height: 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #b91c1c;
+    }
+
+    .field-invalid {
+      border-color: #ef4444;
+      outline: 1px solid #ef4444;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    label {
+      font-weight: 600;
+    }
+
+    input,
+    select,
+    button {
+      font: inherit;
+      padding: 6px 8px;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    thead {
+      background: #f3f4f6;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--border-color);
+      padding: 8px;
+      text-align: left;
+    }
+
+    .sort-btn {
+      border: none;
+      background: transparent;
+      padding: 0;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sort-btn:focus-visible {
+      outline: 2px solid #1d4ed8;
+      outline-offset: 2px;
+    }
+
+    .sort-indicator {
+      font-size: 11px;
+      color: #4b5563;
+      min-width: 28px;
+    }
+
+    .row-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      background: #fff;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+
+    .action-btn:hover {
+      background: #f8fafc;
+    }
+
+    .action-btn.delete {
+      border-color: #ef4444;
+      color: #991b1b;
+    }
+
+    #formMode {
+      margin: 6px 0 0;
+      color: #1d4ed8;
+      font-weight: 600;
+    }
+
+    #message {
+      min-height: 20px;
+      margin: 8px 0 16px;
+      font-weight: bold;
+    }
+
+    #emptyState {
+      margin-top: 10px;
+      color: #374151;
+      font-style: italic;
+    }
+
+    #statusPreview {
+        padding: 6px 8px;
+        border-radius: 6px;
+        font-weight: bold;
+        width: fit-content;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin: 12px 0;
+      max-width: 900px;
+    }
+
+    .summary-card {
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: #f9fafb;
+      padding: 10px;
+    }
+
+    .summary-label {
+      margin: 0;
+      color: #374151;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .summary-value {
+      margin: 4px 0 0;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .summary-ok {
+      background: var(--ok-bg);
+      border-color: #86efac;
+      color: var(--ok-text);
+    }
+
+    .summary-warning {
+      background: var(--warn-bg);
+      border-color: #fcd34d;
+      color: var(--warn-text);
+    }
+
+    .summary-critical {
+      background: var(--critical-bg);
+      border-color: #fca5a5;
+      color: var(--critical-text);
+    }
+
+    .trend-panel {
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: #f9fafb;
+      padding: 10px;
+      margin: 10px 0 12px;
+      max-width: 900px;
+    }
+
+    .trend-title {
+      margin: 0 0 6px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .trend-meta {
+      margin: 0 0 8px;
+      font-size: 12px;
+      color: #4b5563;
+    }
+
+    .trend-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 6px;
+    }
+
+    .trend-item {
+      margin: 0;
+      font-size: 12px;
+      color: #111827;
+    }
+
+    .audit-cell {
+      min-width: 175px;
+    }
+
+    .audit-line {
+      margin: 0;
+      font-size: 11px;
+      line-height: 1.25;
+      white-space: nowrap;
+      color: #374151;
+    }
+
+    .status-ok {
+      color: var(--ok-text);
+      background: var(--ok-bg);
+      font-weight: bold;
+    }
+
+    .status-warning {
+      color: var(--warn-text);
+      background: var(--warn-bg);
+      font-weight: bold;
+    }
+
+    .status-critical {
+      color: var(--critical-text);
+      background: var(--critical-bg);
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<main>
+
+<h2>Shopfloor Data Capture &amp; Monitoring Prototype</h2>
+
+<form id="dataForm">
+  <div class="form-grid">
+    <div class="field">
+      <label for="machineId">Machine ID</label>
+      <input type="text" id="machineId" required autocomplete="off" aria-describedby="machineIdError">
+      <p class="field-error" id="machineIdError"></p>
+    </div>
+
+    <div class="field">
+      <label for="operatorId">Operator ID</label>
+      <input type="text" id="operatorId" required autocomplete="off" aria-describedby="operatorIdError">
+      <p class="field-error" id="operatorIdError"></p>
+    </div>
+
+    <div class="field">
+      <label for="shift">Shift</label>
+      <select id="shift" required aria-describedby="shiftError">
+        <option value="A">A</option>
+        <option value="B">B</option>
+        <option value="C">C</option>
+      </select>
+      <p class="field-error" id="shiftError"></p>
+    </div>
+
+    <div class="field">
+      <label for="temp">Temperature (C)</label>
+      <input type="number" id="temp" min="0" max="120" step="0.1" required aria-describedby="tempError">
+      <p class="field-error" id="tempError"></p>
+    </div>
+
+    <div class="field">
+      <label for="pressure">Pressure (bar)</label>
+      <input type="number" id="pressure" min="1" max="20" step="0.1" required aria-describedby="pressureError">
+      <p class="field-error" id="pressureError"></p>
+    </div>
+
+    <div class="field">
+        <label>Status Preview</label>
+        <div id="statusPreview" class="status-ok">OK</div>
+    </div>
+
+    <div class="field">
+      <label for="status">Status</label>
+      <select id="status" disabled aria-describedby="statusError">
+        <option value="OK">OK</option>
+        <option value="Warning">Warning</option>
+        <option value="Critical">Critical</option>
+      </select>
+      <p class="field-error" id="statusError"></p>
+    </div>
+  </div>
+
+  <div class="button-row">
+    <button type="submit" id="submitBtn">Submit</button>
+    <button type="button" id="cancelEditBtn" hidden>Cancel Edit</button>
+    <button type="button" id="clearDataBtn">Clear All Data</button>
+    <button type="button" id="undoDeleteBtn" disabled>Undo Last Delete</button>
+    <button type="button" id="exportCsvBtn">Export CSV</button>
+    <button type="button" id="importCsvBtn">Import CSV</button>
+    <input type="file" id="csvFileInput" accept=".csv,text/csv" hidden>
+  </div>
+
+  <p id="formMode" hidden>Editing selected record.</p>
+</form>
+
+<p id="message" role="status" aria-live="polite"></p>
+
+<h3>Filters</h3>
+<div class="filters">
+  <div class="field">
+    <label for="searchFilter">Search</label>
+    <input
+      type="text"
+      id="searchFilter"
+      placeholder="Machine, operator, shift, status"
+      autocomplete="off"
+    >
+  </div>
+
+  <div class="field">
+    <label for="shiftFilter">Shift</label>
+    <select id="shiftFilter">
+      <option value="All">All</option>
+      <option value="A">A</option>
+      <option value="B">B</option>
+      <option value="C">C</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="statusFilter">Status</label>
+    <select id="statusFilter">
+      <option value="All">All</option>
+      <option value="OK">OK</option>
+      <option value="Warning">Warning</option>
+      <option value="Critical">Critical</option>
+    </select>
+  </div>
+
+  <button type="button" id="resetFiltersBtn">Reset Filters</button>
+</div>
+
+<h3>Submitted Data</h3>
+<div class="summary-grid" aria-live="polite">
+  <div class="summary-card">
+    <p class="summary-label">Total Visible</p>
+    <p class="summary-value" id="summaryTotal">0</p>
+  </div>
+  <div class="summary-card summary-ok">
+    <p class="summary-label">OK</p>
+    <p class="summary-value" id="summaryOk">0</p>
+  </div>
+  <div class="summary-card summary-warning">
+    <p class="summary-label">Warning</p>
+    <p class="summary-value" id="summaryWarning">0</p>
+  </div>
+  <div class="summary-card summary-critical">
+    <p class="summary-label">Critical</p>
+    <p class="summary-value" id="summaryCritical">0</p>
+  </div>
+</div>
+
+<section class="trend-panel" aria-live="polite">
+  <p class="trend-title">Today Hourly Trend</p>
+  <p class="trend-meta" id="trendMeta">No readings for today yet.</p>
+  <div class="trend-grid" id="trendList"></div>
+</section>
+
+<table id="dataTable">
+  <thead>
+    <tr>
+      <th aria-sort="none">
+        <button type="button" class="sort-btn" data-sort-key="timestamp">
+          Timestamp
+          <span class="sort-indicator">SORT</span>
+        </button>
+      </th>
+      <th>Machine</th>
+      <th>Operator</th>
+      <th>Shift</th>
+      <th aria-sort="none">
+        <button type="button" class="sort-btn" data-sort-key="temp">
+          Temp (C)
+          <span class="sort-indicator">SORT</span>
+        </button>
+      </th>
+      <th aria-sort="none">
+        <button type="button" class="sort-btn" data-sort-key="pressure">
+          Pressure (bar)
+          <span class="sort-indicator">SORT</span>
+        </button>
+      </th>
+      <th aria-sort="none">
+        <button type="button" class="sort-btn" data-sort-key="status">
+          Status
+          <span class="sort-indicator">SORT</span>
+        </button>
+      </th>
+      <th>Audit</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody id="dataTableBody"></tbody>
+</table>
+<p id="emptyState" hidden>No records yet. Submit the form to add machine readings.</p>
+
+</main>
+
+<script src="script.js"></script>
+
+</body>
+</html>
