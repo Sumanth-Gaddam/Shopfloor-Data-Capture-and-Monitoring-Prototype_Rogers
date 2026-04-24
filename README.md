@@ -101,16 +101,4 @@ ORDER BY ShiftCode, Status;
 - GET /api/readings?shift=A&status=Warning: return filtered records
 - GET /api/summary: return grouped counts for dashboard cards/charts
 
-## 8) Interview/Demo Script (60 to 90 seconds)
-1. This app captures shopfloor machine readings from operators.
-2. I included validation so bad values are blocked before storage.
-3. I used localStorage to keep a working prototype frontend-only.
-4. I added shift and status filters to simulate supervisor review.
-5. In production, each record maps directly to a SQL row and is stored through an API.
-6. This design is ready to extend into a backend-connected version.
 
-## 9) Practical Improvements (After Working Version)
-- Add export to CSV
-- Add edit/delete per record
-- Add simple charts for counts by shift and status
-- Replace localStorage with backend API and SQL database
